@@ -2315,4 +2315,21 @@ object LiveUpdateNotifier {
         val hasStrongTrigger = parserDictionary.otpStrongTriggers.any(combinedLower::contains)
         val hasLooseTrigger = parserDictionary.otpLooseTriggerPattern.containsMatchIn(combinedLower)
         if (!hasStrongTrigger && !hasLooseTrigger) {
-           
+                   if (!hasStrongTrigger && !hasLooseTrigger) {
+            return null
+        }
+
+        // Buscar secuencias de dígitos que coincidan con la longitud del código OTP (típico de 4 a 8 dígitos)
+        val codeRegex = Regex("""\b\d{${OTP_CODE_LENGTH.first},${OTP_CODE_LENGTH.last}}\b""")
+        val matchResult = codeRegex.find(combinedText) ?: return null
+        val code = matchResult.value
+
+        // Usar el nombre del paquete como clave de agregación única para la deduplicación de OTP
+        val aggregateKey = packageName.lowercase(Locale.ROOT)
+
+        return OtpMatch(
+            code = code,
+            aggregateKey = aggregateKey
+        )
+    }
+}
